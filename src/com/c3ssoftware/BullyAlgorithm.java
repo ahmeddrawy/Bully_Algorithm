@@ -38,9 +38,6 @@ public class BullyAlgorithm extends JFrame {
 		sbrText.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		sbrText.setAutoscrolls(false);
 		ta.setAutoscrolls(false);
-//		DefaultCaret caret = (DefaultCaret) ta.getCaret();
-//		caret.setUpdatePolicy(DefaultCaret.NEVER_UPDATE);
-//		sbrText.getViewport().setViewPosition(new Point(0,0));
 		// Redirect the output stream to the TextArea
 		PrintStream printStream = new PrintStream(new CustomOutputStream(ta));
 		System.setOut(printStream);

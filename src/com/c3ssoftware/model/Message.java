@@ -48,7 +48,6 @@ public class Message {
 		this.host = host;
 		this.Port = port;
 		this.processStatus = processStatus;
-		System.out.println("sencodwqsdsadasdasd");
 		this.minValue = minValue;
 	}
 

@@ -48,7 +48,6 @@ public class Process {
 	 * @return
 	 */
 	synchronized public Message ResponseEncoder(String response, Peer myPeer) {
-		System.out.println("Response: " + response);
 		Message message = new Message(response);
 		String messageBody = message.getBody();
 		ProcessStatus processStatus = message.getProcessStatus();
@@ -84,7 +83,6 @@ public class Process {
 	 * @param response
 	 */
 	synchronized public Message ResponseDecoder(String response) {
-		System.out.println("From Response Decoder from Dispatcher response is: " + response);
 		// Decode the response using the Message constructor splitter
 		Message message = new Message(response);
 		String msgBody = message.getBody();

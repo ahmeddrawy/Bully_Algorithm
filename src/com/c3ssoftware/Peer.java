@@ -45,7 +45,7 @@ public class Peer {
 			socket.close();
 			return msg;
 		} catch (Exception e) {
-			System.out.println(e);
+			System.out.println(e + " " + peer.getPort());
 		}
 		return null;
 	}
