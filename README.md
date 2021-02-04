@@ -13,8 +13,9 @@ providing simple GUI Swing to trace and kill the instance of the app
 2. if there's a coordinator, process sends a message declaring itself,
 3. Coordinator assigns the new Process a port to listen to
 4. Coordinator dispatch task amoung other process to check the min value of list
-4. Coordinator sends a list of alive processes in system to the new process
-5. Coordinator sends the new process port to the other processes in system
+5. Coordinator collect the return values and find the min amoung them and print to the GUI outpit
+6. Coordinator sends a list of alive processes in system to the new process
+7. Coordinator sends the new process port to the other processes in system
 
 ####  Coordinator down
  Coordinator sends an alive message for all alive processes each period of time, if any process found that a coordinator down sends an election message to other processes
