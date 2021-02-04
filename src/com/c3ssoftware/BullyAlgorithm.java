@@ -65,7 +65,7 @@ public class BullyAlgorithm extends JFrame {
 	}
 
 	public static void main(String args[]) {
-//		new BullyAlgorithm().launchFrame();
+		new BullyAlgorithm().launchFrame();
 		Process process = new Process();
 		process.run();
 
