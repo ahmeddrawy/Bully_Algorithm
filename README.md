@@ -4,7 +4,7 @@ This is my implementation for [Bully Algorithm](https://en.wikipedia.org/wiki/Bu
 Using peer to peer architecture and java socket programming, Simulating bully algorithm using interprocess communication without using threads or interprocess communication libraries 
 
 Multiple instances of your application should run (different processes) and communicate with each other
-Providing simple GUI Swing to trace and kill the instance of the app
+providing simple GUI Swing to trace and kill the instance of the app
 
 ### Built using Peer to Peer Architecture
 #### If new process enters the system 
