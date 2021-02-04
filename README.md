@@ -1,10 +1,9 @@
 # Bully Algorithm
 This is my implementation for [Bully Algorithm](https://en.wikipedia.org/wiki/Bully_algorithm)
 ### Description
-Using peer to peer architecture and java socket programming, Simulating bully algorithm using interprocess communication without using threads or interprocess communication libraries 
+Using peer to peer architecture and java socket programming
 
-Multiple instances of your application should run (different processes) and communicate with each other
-providing simple GUI Swing to trace and kill the instance of the app
+producing one excutable file to be used with multi instances.
 
 ### Built using Peer to Peer Architecture
 #### If new process enters the system 
@@ -23,5 +22,25 @@ providing simple GUI Swing to trace and kill the instance of the app
 #### Winning the Elections
 Eventually the process with the highest priority - port in our case - wins an election.
 The winning process will notify all the other running processes that it is the coordinator.
+
+## How To Compile & Run
+
+1. Start Command Prompt.
+2. Navigate to the folder that holds your class files:
+    C:\>cd \mywork
+3. Set path to include JDK’s bin.  For example:
+    C:\mywork> path c:\Program Files\Java\jdk1.8.0_25\bin;%path%
+4. Compile your class(es):
+   C:\mywork> javac *.java
+5. Create jar file:
+    C:\mywork> jar cvfe bully_algorithm.jar bully_algorithm *.class
+
+6. run your jar:
+    C:\mywork> bully_algorithm.jar
+    or
+    C:\mywork> java -jar bully_algorithm.jar
+
+
+
 
 
