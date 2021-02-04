@@ -32,17 +32,17 @@ public class Peer {
 	 */
 	public Message messageDispatcher(Peer peer, Message message, int timeOut) {
 		try {
-			Socket socket = new Socket(Constants.HOST, peer.getPort());
-			System.out.println("Sending " + message.toString() + " to " + peer.getPort());
-			socket.setSoTimeout(timeOut);
-			DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
-			DataInputStream dataInputStream = new DataInputStream(socket.getInputStream());
-			dataOutputStream.writeUTF(message.toString());
-			String response = dataInputStream.readUTF();
+			Socket s = new Socket(Constants.HOST, peer.getPort());
+			System.out.println("sending " + message.toString() + " to " + peer.getPort());
+			s.setSoTimeout(timeOut);
+			DataOutputStream dout = new DataOutputStream(s.getOutputStream());
+			DataInputStream din = new DataInputStream(s.getInputStream());
+			dout.writeUTF(message.toString());
+			String response = din.readUTF(); /// we need to decode response
 			Message msg = process.ResponseDecoder(response);
-			dataOutputStream.flush();
-			dataOutputStream.close();
-			socket.close();
+			dout.flush();
+			dout.close();
+			s.close();
 			return msg;
 		} catch (Exception e) {
 			System.out.println(e + " " + peer.getPort());
@@ -93,12 +93,12 @@ public class Peer {
 			if (process.isCoordinator()) {
 				// Use same socket if not already initialized otherwise create one
 				if (serverSocket == null || serverSocket.isClosed())
-					bindServerSocket(this.getPort());
+					bindServerSocket();
 				messageReceiver(1000); // listen for 1 second and send alive wait indefinitely
 				process.sendAlive();
 			} else {
 				if (serverSocket == null || serverSocket.isClosed())
-					bindServerSocket(this.getPort());
+					bindServerSocket();
 
 				messageReceiver(Constants.NO_RESPONSE_SPAN);
 			}
@@ -109,10 +109,10 @@ public class Peer {
 
 	}
 
-	private boolean bindServerSocket(int port) {
-		System.out.println("Bind to port: " + port);
+	private boolean bindServerSocket() {
+		System.out.println("Bind to port: " + this.getPort());
 		try {
-			serverSocket = new ServerSocket(port);
+			serverSocket = new ServerSocket(this.getPort());
 			return true;
 		} catch (Exception e) {
 			System.out.println("Cannot bind port: " + port);

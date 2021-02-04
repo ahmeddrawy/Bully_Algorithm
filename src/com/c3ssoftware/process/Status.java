@@ -1,6 +1,6 @@
 package com.c3ssoftware.process;
 
-public enum ProcessStatus {
+public enum Status {
 
 	NEW,
 	ALIVE,

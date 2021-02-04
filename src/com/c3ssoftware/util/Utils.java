@@ -11,7 +11,7 @@ import com.c3ssoftware.model.Message;
 import com.c3ssoftware.process.Process;
 //import com.c3ssoftware.Peer;
 //import com.c3ssoftware.process.Process;
-import com.c3ssoftware.process.ProcessStatus;
+import com.c3ssoftware.process.Status;
 
 public class Utils {
 
@@ -23,7 +23,7 @@ public class Utils {
 	 * @return Message object holds all peer specification alongside with it's
 	 *         status and descriptive message
 	 */
-	public static Message encodeMessage(Peer peer, ProcessStatus processStatus) {
+	public static Message encodeMessage(Peer peer, Status processStatus) {
 		return encodeMessage(peer, processStatus, " ", 0);
 	}
 
@@ -36,7 +36,7 @@ public class Utils {
 	 * @return Message object holds all peer specification alongside with it's
 	 *         status and descriptive message
 	 */
-	public static Message encodeMessage(Peer peer, ProcessStatus processStatus, String body, Integer minValue) {
+	public static Message encodeMessage(Peer peer, Status processStatus, String body, Integer minValue) {
 		switch (processStatus) {
 		case ADD_PEER:
 			return new Message(getNowTimeStamp(), Constants.HOST, peer.getPort(), processStatus, body);

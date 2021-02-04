@@ -14,7 +14,7 @@ import com.c3ssoftware.util.Utils;
 public class Process {
 	public Peer myPeer = null;
 	private List<Peer> peers = new ArrayList<>();
-	public static int COORDINATOR_DEFAULT = 9090;
+	public static final int COORDINATOR_DEFAULT = 9090;
 	private boolean coordinatorFlag = false;
 
 	public Process() {
@@ -47,32 +47,31 @@ public class Process {
 	 * @param response
 	 * @return
 	 */
-	synchronized public Message ResponseEncoder(String response, Peer myPeer) {
+	public Message ResponseEncoder(String response, Peer myPeer) {
 		Message message = new Message(response);
 		String messageBody = message.getBody();
-		ProcessStatus processStatus = message.getProcessStatus();
-
+		Status processStatus = message.getStatus();
 		switch (processStatus) {
 		case NEW:
 			// If new peer received respond with list of other peers
 			// Adding coordinator port and other ports including receiver port
 			peers.add(Utils.newPeer(peers));
 			notifyWithNewPeer();
-			return new Message(Utils.getNowTimeStamp(), Constants.HOST, myPeer.getPort(), ProcessStatus.LIST,
+			return new Message(Utils.getNowTimeStamp(), Constants.HOST, myPeer.getPort(), Status.LIST,
 					Utils.encodePeers(myPeer, peers));
 		case VICTORY:
 			// Remove the peer that won the election and become COORDINATOR
 			removePeer(Integer.parseInt(messageBody));
 			myPeer.setActive(true);
-			return Utils.encodeMessage(myPeer, ProcessStatus.OK);
+			return Utils.encodeMessage(myPeer, Status.OK);
 		case ADD_PEER:
 			// Add new peer to list of peers
 			peers.add(new Peer(Integer.parseInt(message.getBody())));
-			return Utils.encodeMessage(myPeer, ProcessStatus.OK);
+			return Utils.encodeMessage(myPeer, Status.OK);
 		case TASK:
-			return Utils.encodeMessage(myPeer, ProcessStatus.OK, "", Utils.min(message.getTaskList(response)));
+			return Utils.encodeMessage(myPeer, Status.OK, "", Utils.min(message.getTaskList(response)));
 		default:
-			return Utils.encodeMessage(myPeer, ProcessStatus.OK);
+			return Utils.encodeMessage(myPeer, Status.OK);
 		}
 	}
 
@@ -82,21 +81,21 @@ public class Process {
 	 * 
 	 * @param response
 	 */
-	synchronized public Message ResponseDecoder(String response) {
+	public Message ResponseDecoder(String response) {
 		// Decode the response using the Message constructor splitter
 		Message message = new Message(response);
 		String msgBody = message.getBody();
 		int senderPort = message.getPort();
-		ProcessStatus processStatus = message.getProcessStatus();
+		Status processStatus = message.getStatus();
 
 		switch (processStatus) {
 		case LIST:
 			System.out.println("Received list of peers");
+			System.out.println(msgBody);
 			updatePeerList(msgBody);
 			break;
 		case OK:
-			Integer minValue = message.getMinValue();
-			System.out.println("Received Task answer: " + minValue + " from mesage: " + message.toString());
+			System.out.println(message.toString());
 			System.out.println("Received okay from port: " + senderPort);
 			break;
 		default:
@@ -128,16 +127,15 @@ public class Process {
 	 * 
 	 */
 	synchronized public void electionBroadcast() {
-		Message message = new Message(Utils.getNowTimeStamp(), myPeer.getHost(), myPeer.getPort(),
-				ProcessStatus.ELECTION);
+		Message message = new Message(Utils.getNowTimeStamp(), Constants.HOST, myPeer.getPort(), Status.ELECTION);
 		message.setBody(myPeer.getPort() + "");
-		broadcaster(message, 0);
+		broadcaster(message, 100);
 		boolean isCoordinator = true;
 		for (int i = 0; i < peers.size() - 1; ++i) {
 			Message msg = myPeer.messageReceiver(200);
-			if (msg != null && msg.getProcessStatus() == ProcessStatus.VICTORY) {
+			if (msg != null && msg.getStatus() == Status.VICTORY) {
 				isCoordinator = false;
-			} else if (msg != null && msg.getProcessStatus() == ProcessStatus.ELECTION) {
+			} else if (msg != null && msg.getStatus() == Status.ELECTION) {
 				System.out.println("election from " + msg.getBody());
 				if (Integer.parseInt(msg.getBody()) < myPeer.getPort()) {
 					isCoordinator = false;
@@ -146,8 +144,7 @@ public class Process {
 		}
 		if (isCoordinator) {
 			victoryBroadcast();
-			taskDispatcher(getPeers());
-			myPeer.Listen();
+			taskDispatcher(peers);
 		}
 		myPeer.Listen();
 	}
@@ -157,11 +154,10 @@ public class Process {
 	 * list and setting the default port(ID) to the elected peer port(ID)
 	 * 
 	 */
-	synchronized void victoryBroadcast() {
+	void victoryBroadcast() {
 
 		System.out.println("Victory from " + myPeer.getPort());
-		int oldPort = COORDINATOR_DEFAULT;
-		COORDINATOR_DEFAULT = myPeer.getPort();
+		int oldPort = myPeer.getPort();
 		try {
 			myPeer.getServerSocket().close();
 		} catch (IOException e) {
@@ -170,9 +166,11 @@ public class Process {
 		myPeer.setActive(true);
 		setCoordinator(true);
 		myPeer.setPort(COORDINATOR_DEFAULT);
-		removePeer(oldPort);// remove coordinator
-		broadcaster(new Message(Utils.getNowTimeStamp(), Constants.HOST, myPeer.getPort(), ProcessStatus.VICTORY,
-				"" + oldPort), Constants.VICTORY_TIMEOUT);
+		removePeer(COORDINATOR_DEFAULT);/// remove coordinator
+		broadcaster(new Message(Utils.getNowTimeStamp(), Constants.HOST, myPeer.getPort(), Status.VICTORY, "" + oldPort),
+				Constants.VICTORY_TIMEOUT);
+		taskDispatcher(peers);
+		myPeer.Listen();
 	}
 
 	/**
@@ -184,8 +182,7 @@ public class Process {
 		System.out.println("Notifying others with the new peer");
 		for (int i = 0; i < peers.size() - 1; i++) {
 			myPeer.messageDispatcher(peers.get(i),
-					Utils.encodeMessage(myPeer, ProcessStatus.ADD_PEER, "" + peers.get(peers.size() - 1).getPort(), 0),
-					1000);
+					Utils.encodeMessage(myPeer, Status.ADD_PEER, "" + peers.get(peers.size() - 1).getPort(), 0), 1000);
 		}
 
 	}
@@ -196,7 +193,7 @@ public class Process {
 	 * @return
 	 */
 	public Message checkCoordinatorExistance() {
-		return myPeer.messageDispatcher(myPeer, Utils.encodeMessage(myPeer, ProcessStatus.NEW), 4000);
+		return myPeer.messageDispatcher(myPeer, Utils.encodeMessage(myPeer, Status.NEW), 4000);
 	}
 
 	/*
@@ -214,7 +211,7 @@ public class Process {
 	 * 
 	 */
 	public void sendAlive() {
-		broadcaster(new Message(Utils.getNowTimeStamp(), Constants.HOST, myPeer.getPort(), ProcessStatus.ALIVE),
+		broadcaster(new Message(Utils.getNowTimeStamp(), Constants.HOST, myPeer.getPort(), Status.ALIVE),
 				Constants.ALIVE_TIME_OUT);
 	}
 
@@ -249,7 +246,7 @@ public class Process {
 		this.peers = peers;
 	}
 
-	synchronized public void taskDispatcher(List<Peer> peerList) {
+	public void taskDispatcher(List<Peer> peerList) {
 		List<Integer> minValueList = new ArrayList<>();
 		List<Integer> taskList = Utils.listGenerator();
 		int noOfSubList = 0;
@@ -259,7 +256,7 @@ public class Process {
 
 		List<List<Integer>> result = Partition.ofSize(taskList, noOfSubList);
 		for (int i = 0; i < peerList.size(); i++) {
-			Message msg = new Message(Utils.getNowTimeStamp(), Constants.HOST, myPeer.getPort(), ProcessStatus.TASK,
+			Message msg = new Message(Utils.getNowTimeStamp(), Constants.HOST, myPeer.getPort(), Status.TASK,
 					"" + peerList.get(i).getPort());
 			msg.setTaskList(result.get(i));
 			Message returnedMsg = peerList.get(i).messageDispatcher(peerList.get(i), msg, 200);
