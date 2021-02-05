@@ -25,6 +25,7 @@ producing one excutable file to be used with multi instances.
     C:\mywork> java -jar bully_algorithm.jar
 
 
+*This code is refactored with adding feature of task distribution and GUI using Swing from the follwoing repo: https://github.com/ahmeddrawy/Bully-Algorithm-Refactored.
 
 
 
